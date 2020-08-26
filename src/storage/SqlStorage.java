@@ -11,7 +11,7 @@ public class SqlStorage {
     String dbUrl = "jdbc:postgresql://localhost:5432/SimpleCRUD";
     String dbUser = "postgres";
     String dbPassword = "password";
-/*
+    /*
     public static void main(String[] args) {
         SqlStorage sqlStorage = new SqlStorage();
         sqlStorage.create(1, "DOG1", 11);
