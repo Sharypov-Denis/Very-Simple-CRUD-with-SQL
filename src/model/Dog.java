@@ -13,6 +13,12 @@ public class Dog {
         this.age = age;
     }
 
+    public Dog(String name, int uuid, int age) {
+        this.name = name;
+        this.uuid = uuid;
+        this.age = age;
+    }
+
     public Dog(String name, int age) {
         this.name = name;
         this.age = age;

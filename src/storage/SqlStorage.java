@@ -11,7 +11,7 @@ public class SqlStorage {
     String dbUrl = "jdbc:postgresql://localhost:5432/SimpleCRUD";
     String dbUser = "postgres";
     String dbPassword = "password";
-
+/*
     public static void main(String[] args) {
         SqlStorage sqlStorage = new SqlStorage();
         sqlStorage.create(1, "DOG1", 11);
@@ -27,8 +27,7 @@ public class SqlStorage {
         sqlStorage.update(3, "DOG33", 333);
         sqlStorage.clear();
         sqlStorage.getSize();
-
-    }
+    }*/
 
     public void clear() {
         try (Connection connect = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
@@ -39,6 +38,7 @@ public class SqlStorage {
             ex.printStackTrace();
         }
     }
+
 
     public void create(int uuid, String name, int age) {
         try (Connection connect = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
@@ -55,12 +55,23 @@ public class SqlStorage {
 
     public void createDog(Dog dog) {
         try (Connection connect = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            PreparedStatement ps = connect.prepareStatement("INSERT INTO dogs (uuid, name, age) VALUES (?, ?,?)");
-            ps.setInt(1, dog.getUuid());
-            ps.setString(2, dog.setName());
-            ps.setInt(3, dog.setAge());
-            ps.execute();
-            System.out.println("Operation 'clearDog' completed!");
+            try {
+                connect.setAutoCommit(false);//это операция транзакция
+                // Первая транзакция
+                PreparedStatement ps = connect.prepareStatement("INSERT INTO dogs (uuid, name, age) VALUES (?, ?,?)");
+                ps.setInt(1, dog.getUuid());
+                ps.setString(2, dog.setName());
+                ps.setInt(3, dog.setAge());
+                ps.execute();
+                // Завершение транзакции
+                connect.commit();//это операция транзакция
+
+                System.out.println("Pre-Operation 'creatDog' completed!");
+            } catch (Exception ex) {
+                connect.rollback();
+                System.out.println("Pre-Operation 'creatDog' ERROR!");
+            }
+            System.out.println("Operation 'creatDog' completed!");
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -101,7 +112,7 @@ public class SqlStorage {
 
     public void delete(int uuid) {
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM dogs WHERE uuid=?");
+            PreparedStatement ps = connection.prepareStatement("DELETE FROM dogs WHERE uuid=?");
             ps.setInt(1, uuid);
             ps.execute();
             System.out.println("Operation 'delete' completed!");
@@ -127,15 +138,28 @@ public class SqlStorage {
         return null;
     }
 
-    public void getSize() {
+    /*
+        public void getSize() {
+            try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+                Statement stmt = connection.createStatement();
+                ResultSet resultSet = stmt.executeQuery("select count(*) from dogs");
+                int size = resultSet.next() ? resultSet.getInt(1) : 0;
+                System.out.println(size);
+                System.out.println("Operation 'getSize' completed!");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        } */
+    public Object getSize() {
+        int size;
         try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
             Statement stmt = connection.createStatement();
             ResultSet resultSet = stmt.executeQuery("select count(*) from dogs");
-            int size = resultSet.next() ? resultSet.getInt(1) : 0;
-            System.out.println(size);
-            System.out.println("Operation 'getSize' completed!");
+            size = resultSet.next() ? resultSet.getInt(1) : 0;
+            return size;
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+        return null;
     }
 }
